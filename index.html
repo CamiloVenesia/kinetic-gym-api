@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kinetic Gym — Sistema de Gestión</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<div id="login" class="screen active">
+  <div class="login-card">
+  <div class="login-logo">KINETIC</div>
+  <div class="login-sub">Sistema de Gestión · Rosario</div>
+
+  <div class="l-roles">
+    <div class="role-chip active" onclick="selRole(this)">Admin</div>
+    <div class="role-chip" onclick="selRole(this)">Recepción</div>
+    <div class="role-chip" onclick="selRole(this)">Dueño</div>
+  </div>
+
+  <label class="l-label">Usuario</label>
+  <input class="l-input" id="l-user" type="text" placeholder="Usuario"
+    onkeydown="if(event.key==='Enter') doLogin()">
+
+  <label class="l-label">Contraseña</label>
+  <input class="l-input" id="l-pass" type="password" placeholder="••••••••"
+    onkeydown="if(event.key==='Enter') doLogin()">
+
+  <button class="l-btn" onclick="doLogin()">Ingresar al sistema</button>
+</div>
+</div>
+
+<div id="app" class="screen">
+  <nav class="nav">
+    <div class="nav-logo">K<span>INETIC</span></div>
+    <button id="nav-tab-dashboard" class="nav-tab active" onclick="showTab('dashboard',this)">Dashboard</button>
+    <button id="nav-tab-clientes"  class="nav-tab" onclick="showTab('clientes',this)">Clientes</button>
+    <button id="nav-tab-inscripcion" class="nav-tab" onclick="showTab('inscripcion',this)">Nueva inscripción</button>
+    <div class="nav-right">
+      <div class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Cambiar tema"></div>
+      <div class="nav-user" id="nav-u">Admin</div>
+      <div class="nav-avatar" onclick="doLogout()">A</div>
+    </div>
+  </nav>
+  
+
+  <div class="app-body">
+
+    <aside class="kiosk-panel">
+      <div class="kiosk-titlebar">
+        <div class="kiosk-titlebar-title">⚡ Kinetic Gym — Ingreso Diario</div>
+        <button class="kiosk-titlebar-exit" onclick="toggleKioskMode()">✕ Salir</button>
+      </div>
+    
+      <div class="kiosk-left-col">
+        <div class="kiosk-header" style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div class="kiosk-label">Ingreso de socios</div>
+            <div class="kiosk-title">Escribí tu DNI y presioná <span style="color:var(--accent)">ENTER</span></div>
+          </div>
+          <button class="kiosk-btn-toggle" onclick="toggleKioskMode()" title="Activar Modo Kiosco" style="background: var(--bg3); border: 1px solid var(--border2); color: var(--text2); border-radius: 6px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.15s; flex-shrink: 0; margin-left: 12px;" onmouseover="this.style.color='var(--text)'; this.style.background='var(--bg4)'" onmouseout="this.style.color='var(--text2)'; this.style.background='var(--bg3)'">⇥</button>
+        </div>
+      
+        <div class="dni-display">
+          <div class="dni-display-num empty" id="kiosk-display">_ _ _ _ _ _ _ _</div>
+          <button class="dni-display-clear" onclick="kiosk_del_all()">✕</button>
+        </div>
+      
+        <div class="numpad">
+          <button class="key" onclick="kp('1')">1</button>
+          <button class="key" onclick="kp('2')">2<div class="key-sub">ABC</div></button>
+          <button class="key" onclick="kp('3')">3<div class="key-sub">DEF</div></button>
+          <button class="key" onclick="kp('4')">4<div class="key-sub">GHI</div></button>
+          <button class="key" onclick="kp('5')">5<div class="key-sub">JKL</div></button>
+          <button class="key" onclick="kp('6')">6<div class="key-sub">MNO</div></button>
+          <button class="key" onclick="kp('7')">7<div class="key-sub">PQR</div></button>
+          <button class="key" onclick="kp('8')">8<div class="key-sub">TUV</div></button>
+          <button class="key" onclick="kp('9')">9<div class="key-sub">WXY</div></button>
+          <button class="key key-del" onclick="kiosk_del()">⌫</button>
+          <button class="key" onclick="kp('0')">0</button>
+          <button class="key key-enter" style="grid-column: span 2;" onclick="kiosk_enter()">ENTER ↵</button>
+        </div>
+      </div>
+    
+      <div class="kiosk-result-wrap">
+        <div id="kiosk-idle" class="kiosk-idle">
+          <div class="kiosk-idle-icon">⌨</div>
+          Ingresá tu número de DNI<br>sin puntos ni espacios
+        </div>
+        <div id="kiosk-result" class="kiosk-result-inner">
+          <div id="kr-icon" class="kiosk-result-icon"></div>
+          <div id="kr-name" class="kiosk-result-name"></div>
+          <div id="kr-detail" class="kiosk-result-detail"></div>
+          <div id="kr-badge" class="kiosk-badge"></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+
+      <div id="tab-dashboard" class="tab-content active">
+        <div class="metrics-grid">
+          <div class="metric-card a" 
+               style="cursor:pointer;transition:border-color .15s" 
+               onclick="openActivosDrawer()" 
+               onmouseover="this.style.borderColor='var(--accent)'" 
+               onmouseout="this.style.borderColor=''">
+            <div class="metric-label">Alumnos activos</div>
+            <div class="metric-value" id="db-activos">—</div>
+            <div class="metric-sub" id="db-activos-sub"></div>
+          </div>
+          <div class="metric-card g"
+               style="cursor:pointer;transition:border-color .15s"
+               onclick="openPagosDrawer()"
+               onmouseover="this.style.borderColor='var(--green)'"
+               onmouseout="this.style.borderColor=''">
+            <div class="metric-label">Recaudado este mes</div>
+            <div class="metric-value" id="db-ingresos" style="font-size:26px">—</div>
+            <div class="metric-sub" id="db-ingresos-sub"></div>
+          </div>
+          <div class="metric-card y">
+            <div class="metric-label">Cuotas vencidas</div>
+            <div class="metric-value" id="db-vencidas">—</div>
+            <div class="metric-sub" id="db-vencidas-sub"></div>
+          </div>
+          <div class="metric-card b">
+            <div class="metric-label">Ingresos hoy</div>
+            <div class="metric-value" id="db-hoy">—</div>
+            <div class="metric-sub" id="db-hoy-sub"></div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="inner-card">
+            <div class="ic-title">Ingresos por día — Mayo <span>cantidad de entradas</span></div>
+            <div class="bar-chart" id="bar-chart"></div>
+          </div>
+          <div class="inner-card">
+            <div class="ic-title">Horas pico <span id="horas-title">hoy</span></div>
+            <div id="horas-chart"></div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="inner-card">
+            <div class="ic-title">Últimas inscripciones</div>
+            <div id="pagos-list"></div>
+          </div>
+          <div class="inner-card">
+            <div class="ic-title">Distribución de planes <span id="planes-total"></span></div>
+            <div id="planes-list"></div>
+          </div>
+        </div>
+        <div class="inner-card" style="margin-bottom:20px">
+          <div class="ic-title">Vencimientos próximos <span>próximos 7 días</span></div>
+          <table class="tbl" id="vencimientos-tbl">
+            <thead><tr><th>Alumno</th><th>Plan</th><th>Vence</th><th>Días restantes</th></tr></thead>
+            <tbody id="vencimientos-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-clientes" class="tab-content">
+        <div class="table-card">
+          <div class="tc-header">
+            <div class="tc-title">Todos los clientes</div>
+            <input class="search-input-sm" type="text" placeholder="Buscar por nombre o DNI..." id="client-search" oninput="filterClients()">
+          </div>
+          <div style="padding:0 8px 8px">
+            <table class="tbl">
+              <thead>
+                <tr><th>Nombre</th><th>DNI</th><th>Plan</th><th>Estado</th><th>Vence</th><th>Teléfono</th><th style="width:90px"></th></tr>
+              </thead>
+              <tbody id="clients-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="tab-inscripcion" class="tab-content">
+        <div class="inscripcion-layout">
+          <div>
+            <div class="form-card">
+              <div class="form-card-title">Inscribir nuevo cliente</div>
+              <div class="form-row">
+                <div>
+                  <label class="form-label">Nombre</label>
+                  <input class="form-input" id="f-nombre" type="text" placeholder="Ej: Juan">
+                </div>
+                <div>
+                  <label class="form-label">Apellido</label>
+                  <input class="form-input" id="f-apellido" type="text" placeholder="Ej: Pérez">
+                </div>
+              </div>
+              <label class="form-label">DNI</label>
+              <input class="form-input" id="f-dni" type="text" placeholder="Sin puntos ni espacios" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+              <label class="form-label">Teléfono (opcional)</label>
+              <input class="form-input" id="f-tel" type="text" placeholder="Ej: 341-5023891">
+              <div class="form-row">
+                <div>
+                  <label class="form-label">Plan</label>
+                  <select class="form-select" id="f-plan" onchange="updatePlanPreview()">
+                    <optgroup label="── Planes mensuales ──">
+                      <option value="Mensual 2x|30000">Mensual 2x por semana — $30.000</option>
+                      <option value="Mensual 3x|33000">Mensual 3x por semana — $33.000</option>
+                      <option value="Mensual Libre|35000">Mensual Libre (ilimitado) — $35.000</option>
+                    </optgroup>
+                    <optgroup label="── Planes semanales ──">
+                      <option value="Semanal 5d|20000">Semanal 5 días — $20.000</option>
+                      <option value="Semanal 3d|15000">Semanal 3 días — $15.000</option>
+                      <option value="Semanal 2d|13000">Semanal 2 días — $13.000</option>
+                    </optgroup>
+                    <optgroup label="── Otros ──">
+                      <option value="Pase Diario|7000">Pase Diario — $7.000</option>
+                    </optgroup>
+</select>
+                </div>
+                <div>
+                  <label class="form-label">Método de pago</label>
+                  <select class="form-select" id="f-metodo">
+                    <option>Efectivo</option>
+                    <option>Transferencia</option>
+                    <option>Mercado Pago</option>
+                    <option>Tarjeta débito</option>
+                  </select>
+                </div>
+              </div>
+              <label class="form-label">Fecha de inicio</label>
+              <input class="form-input" id="f-fecha" type="date" value="2026-05-28" oninput="updatePlanPreview()">
+              <button class="submit-btn" onclick="inscribirCliente()">Inscribir cliente</button>
+            </div>
+
+            <div style="margin-top:18px">
+              <div class="section-head"><div class="section-title">Inscripciones recientes</div></div>
+              <div class="inscripciones-list" id="ins-list"></div>
+            </div>
+          </div>
+
+          <div class="plan-preview">
+            <div class="plan-preview-title">Seleccionar plan</div>
+            <div id="plan-options">
+              <!-- ── MENSUALES ── -->
+              <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:0 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)">Planes mensuales</div>
+              <div class="plan-option selected" onclick="selectPlan(this,'Mensual 2x|30000')">
+                <div class="plan-option-name">Mensual 2x</div>
+                <div class="plan-option-price">$30.000</div>
+                <div class="plan-option-detail">L–V 8 a 21:15 hs · Sáb 10 a 13 hs</div>
+              </div>
+              <div class="plan-option" onclick="selectPlan(this,'Mensual 3x|33000')">
+                <div class="plan-option-name">Mensual 3x</div>
+                <div class="plan-option-price">$33.000</div>
+                <div class="plan-option-detail">L–V 8 a 21:15 hs · Sáb 10 a 13 hs</div>
+              </div>
+              <div class="plan-option" onclick="selectPlan(this,'Mensual Libre|35000')">
+                <div class="plan-option-name">Mensual Libre</div>
+                <div class="plan-option-price">$35.000</div>
+                <div class="plan-option-detail">Ilimitado · L–V 8 a 21:15 · Sáb 10 a 13</div>
+              </div>
+
+              <!-- ── SEMANALES ── -->
+              <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)">Planes semanales</div>
+              <div class="plan-option" onclick="selectPlan(this,'Semanal 5d|20000')">
+                <div class="plan-option-name">Semanal 5d</div>
+                <div class="plan-option-price">$20.000</div>
+                <div class="plan-option-detail">Válido 7 días · L–V 8 a 21:15 hs</div>
+              </div>
+              <div class="plan-option" onclick="selectPlan(this,'Semanal 3d|15000')">
+                <div class="plan-option-name">Semanal 3d</div>
+                <div class="plan-option-price">$15.000</div>
+                <div class="plan-option-detail">Válido 7 días · L–V 8 a 21:15 hs</div>
+              </div>
+              <div class="plan-option" onclick="selectPlan(this,'Semanal 2d|13000')">
+                <div class="plan-option-name">Semanal 2d</div>
+                <div class="plan-option-price">$13.000</div>
+                <div class="plan-option-detail">Válido 7 días · L–V 8 a 21:15 hs</div>
+              </div>
+
+              <!-- ── OTROS ── -->
+              <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:2px;text-transform:uppercase;margin:16px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)">Otros</div>
+              <div class="plan-option" onclick="selectPlan(this,'Pase Diario|7000')">
+                <div class="plan-option-name">Pase Diario</div>
+                <div class="plan-option-price">$7.000</div>
+                <div class="plan-option-detail">Acceso por un día · L–V 8 a 21:15</div>
+              </div>
+            </div>
+            <div style="margin-top:16px;padding:14px;background:var(--bg3);border-radius:var(--r);">
+              <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Resumen</div>
+              <div id="plan-resumen" style="font-size:13px;color:var(--text2);line-height:1.9"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-overlay" id="modal-edit">
+  <div class="modal">
+    <div class="modal-title">Editar cliente</div>
+    <input type="hidden" id="edit-id">
+    <label class="form-label">Nombre completo</label>
+    <input class="form-input" id="edit-nombre" type="text">
+    <label class="form-label">DNI</label>
+    <input class="form-input" id="edit-dni" type="text">
+    <label class="form-label">Teléfono</label>
+    <input class="form-input" id="edit-tel" type="text">
+    <div class="form-row">
+      <div>
+        <label class="form-label">Plan</label>
+        <select class="form-select" id="edit-plan">
+          <optgroup label="── Planes mensuales ──">
+            <option value="Mensual 2x">Mensual 2x por semana</option>
+            <option value="Mensual 3x">Mensual 3x por semana</option>
+            <option value="Mensual Libre">Mensual Libre (ilimitado)</option>
+          </optgroup>
+          <optgroup label="── Planes semanales ──">
+            <option value="Semanal 5d">Semanal 5 días</option>
+            <option value="Semanal 3d">Semanal 3 días</option>
+            <option value="Semanal 2d">Semanal 2 días</option>
+          </optgroup>
+          <optgroup label="── Otros ──">
+            <option value="Pase Diario">Pase Diario</option>
+          </optgroup>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Vencimiento</label>
+        <input class="form-input" id="edit-vence" type="text" placeholder="DD/MM/AAAA">
+      </div>
+    </div>
+    <div class="modal-row">
+      <button class="modal-btn cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn save" onclick="saveEdit()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR ELIMINAR -->
+<div class="modal-overlay" id="modal-del">
+  <div class="modal">
+    <div class="modal-title">¿Eliminar registro?</div>
+    <div style="font-size:14px;color:var(--text2);line-height:1.7">Esta acción no se puede deshacer.<br>Se eliminará permanentemente el registro de <strong id="del-nombre" style="color:var(--text)"></strong>.</div>
+    <div class="modal-row">
+      <button class="modal-btn cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn confirm" onclick="confirmDelete()">Sí, eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RENOVAR CUOTA -->
+<div class="modal-overlay" id="modal-renovar">
+  <div class="modal">
+    <div class="modal-title">Renovar cuota</div>
+    <input type="hidden" id="renovar-id">
+    
+    <label class="form-label">Cliente</label>
+    <input class="form-input" id="renovar-nombre" type="text" readonly style="opacity:.7;cursor:not-allowed">
+    
+    <div class="form-row">
+      <div>
+        <label class="form-label">Plan</label>
+        <select class="form-select" id="renovar-plan" onchange="actualizarPreviewRenovacion()">
+          <option value="" selected disabled>Elegí un plan...</option> <!-- Opción obligatoria por defecto -->
+          <optgroup label="── Planes mensuales ──">
+            <option value="Mensual 2x">Mensual 2x por semana</option>
+            <option value="Mensual 3x">Mensual 3x por semana</option>
+            <option value="Mensual Libre">Mensual Libre (ilimitado)</option>
+          </optgroup>
+          <optgroup label="── Planes semanales ──">
+            <option value="Semanal 5d">Semanal 5 días</option>
+            <option value="Semanal 3d">Semanal 3 días</option>
+            <option value="Semanal 2d">Semanal 2 días</option>
+          </optgroup>
+          <optgroup label="── Otros ──">
+            <option value="Pase Diario">Pase Diario</option>
+          </optgroup>
+        </select>
+      </div>
+      <div>
+        <label class="form-label">Importe ($)</label>
+        <!-- Le agregamos readonly y el estilo de bloqueado -->
+        <input class="form-input" id="renovar-importe" type="number" readonly style="opacity:.7;cursor:not-allowed">
+      </div>
+    </div>
+    
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:4px">
+      <div style="font-size:10px;color:var(--text3);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">Nueva fecha de vencimiento</div>
+      <div id="renovar-fecha-preview" style="font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--green)">—</div>
+      <div id="renovar-base-info" style="font-size:11px;color:var(--text3);margin-top:4px"></div>
+    </div>
+    
+    <div class="modal-row">
+      <button class="modal-btn cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn save" onclick="confirmarRenovacion()">Confirmar pago</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- PERFIL DRAWER -->
+<div class="profile-overlay" id="profile-overlay" onclick="closeProfile()"></div>
+<div class="profile-drawer" id="profile-drawer">
+  <div class="profile-drawer-header">
+    <div class="profile-avatar-lg" id="pd-avatar"></div>
+    <div class="profile-header-info">
+      <div class="profile-name" id="pd-name">Cargando...</div>
+      <div class="profile-meta" id="pd-meta"></div>
+    </div>
+    <div class="profile-close" onclick="closeProfile()">✕</div>
+  </div>
+  <div class="profile-stats">
+    <div class="profile-stat">
+      <div class="profile-stat-val" id="pd-total-vis">0</div>
+      <div class="profile-stat-lbl">Ingresos</div>
+    </div>
+    <div class="profile-stat">
+      <div class="profile-stat-val" id="pd-mes-vis">0</div>
+      <div class="profile-stat-lbl">Este mes</div>
+    </div>
+    <div class="profile-stat">
+      <div class="profile-stat-val" id="pd-racha">0</div>
+      <div class="profile-stat-lbl">Racha (días)</div>
+    </div>
+  </div>
+  <div class="profile-body">
+    <div class="heatmap-wrap">
+      <div class="profile-section-title">Últimos 28 días</div>
+      <div class="heatmap-grid" id="pd-heatmap"></div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div class="profile-section-title">
+        <span>Historial de ingresos</span>
+        <span id="pd-hist-count" style="font-weight:400;font-family:var(--font-b);font-size:11px"></span>
+      </div>
+      <div class="history-list" id="pd-history"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ALUMNOS ACTIVOS DRAWER -->
+<div class="profile-overlay" id="activos-overlay" onclick="closeActivosDrawer()"></div>
+<div class="profile-drawer" id="activos-drawer">
+  <div class="profile-drawer-header">
+    <div class="profile-avatar-lg" style="background:rgba(230,48,48,0.15);border-color:var(--accent);color:var(--accent);font-size:22px">🏋️</div>
+    <div class="profile-header-info">
+      <div class="profile-name">Alumnos activos</div>
+      <div class="profile-meta" id="activos-drawer-subtitulo"></div>
+    </div>
+    <div class="profile-close" onclick="exportarCSV('activos')" style="margin-right:6px" title="Exportar a CSV">⬇</div>
+    <div class="profile-close" onclick="closeActivosDrawer()">✕</div>
+  </div>
+  <div class="profile-stats">
+    <div class="profile-stat">
+      <div class="profile-stat-val" id="activos-stat-total">0</div>
+      <div class="profile-stat-lbl">Total</div>
+    </div>
+    <div class="profile-stat">
+      <div class="profile-stat-val" id="activos-stat-pronto" style="color:var(--yellow)">0</div>
+      <div class="profile-stat-lbl">Vencen pronto</div>
+    </div>
+    <div class="profile-stat">
+      <div class="profile-stat-val" id="activos-stat-libre" style="color:var(--green)">0</div>
+      <div class="profile-stat-lbl">Plan Libre</div>
+    </div>
+  </div>
+  <div class="profile-body">
+    <div style="margin-bottom:20px">
+      <div class="profile-section-title">
+        <span>Listado completo</span>
+        <span id="activos-drawer-count" style="font-weight:400;font-family:var(--font-b);font-size:11px"></span>
+      </div>
+      <div id="activos-drawer-list" class="history-list"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- PAGOS DEL MES DRAWER -->
+<div class="profile-overlay" id="pagos-overlay" onclick="closePagosDrawer()"></div>
+<div class="profile-drawer" id="pagos-drawer">
+  <div class="profile-drawer-header">
+    <div class="profile-avatar-lg" style="background:rgba(34,197,94,0.15);border-color:var(--green);color:var(--green);font-size:22px">💵</div>
+    <div class="profile-header-info">
+      <div class="profile-name" style="display:flex; align-items:center; gap:10px;">
+        <button class="nav-btn" onclick="changePagosMonth(-1)">◀</button>
+        <span id="pagos-drawer-titulo" style="font-size:20px;">Recaudación</span>
+        <button class="nav-btn" onclick="changePagosMonth(1)">▶</button>
+      </div>
+      <div class="profile-meta" id="pagos-drawer-subtitulo"></div>
+    </div>
+    <div class="profile-close" onclick="exportarCSV('pagos')" style="margin-right:6px" title="Exportar a CSV">⬇</div>
+    <div class="profile-close" onclick="closePagosDrawer()">✕</div>
+  </div>
+  
+  <div class="profile-stats">
+    <div class="profile-stat">
+      <div class="profile-stat-val" id="pagos-stat-total" style="color:var(--green)">$0</div>
+      <div class="profile-stat-lbl">Recaudado</div>
+    </div>
+    <div class="profile-stat">
+      <div class="profile-stat-val" id="pagos-stat-cant">0</div>
+      <div class="profile-stat-lbl">Pagos</div>
+    </div>
+    <div class="profile-stat">
+      <div class="profile-stat-val" id="pagos-stat-prom" style="color:var(--yellow)">$0</div>
+      <div class="profile-stat-lbl">Promedio</div>
+    </div>
+  </div>
+  
+  <div class="profile-body">
+    <div style="margin-bottom:20px">
+      <div class="profile-section-title">
+        <span>Detalle de pagos</span>
+        <span id="pagos-drawer-count" style="font-weight:400;font-family:var(--font-b);font-size:11px"></span>
+      </div>
+      <div id="pagos-drawer-list" class="history-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Scripts: el orden importa -->
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/kiosk.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/clientes.js"></script>
+<script src="js/inscripcion.js"></script>
+<script src="js/perfil.js"></script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{
+  "name": "kinetic-backend",
+  "version": "1.0.0",
+  "description": "API REST para el sistema de gestión de Kinetic Gym",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2",
+    "mongodb": "^7.2.0",
+    "mongoose": "^8.24.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
