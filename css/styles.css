@@ -715,16 +715,21 @@ body.light-mode ::-webkit-scrollbar-thumb{ background: var(--border2); }
 
 /* Resultado expandido en modo kiosco */
 #app.kiosk-mode .kiosk-result-inner {
-  margin: 0; border-radius: 0; border: none; flex: 1;
-  padding: 28px 32px; justify-content: center;
+  margin: 0;
+  border-radius: 0;
+  border: none;
+  flex: 1;
+  padding: 28px 32px;
+  justify-content: center;
 }
+
 #app.kiosk-mode .kiosk-result-inner.green { background: rgba(34,197,94,.08); }
 #app.kiosk-mode .kiosk-result-inner.red   { background: rgba(239,68,68,.08);  }
 
-#app.kiosk-mode .kiosk-result-icon  { font-size: 56px; margin-bottom: 16px; }
-#app.kiosk-mode .kiosk-result-name  { font-size: 34px; margin-bottom: 10px; }
-#app.kiosk-mode .kiosk-result-detail { font-size: 16px; line-height: 2; }
-#app.kiosk-mode .kiosk-badge        { font-size: 15px; padding: 8px 20px; margin-top: 14px; }
+#app.kiosk-mode .kiosk-result-icon   { font-size: 80px; margin-bottom: 20px; }
+#app.kiosk-mode .kiosk-result-name   { font-size: 52px; font-weight: 800; margin-bottom: 20px; letter-spacing: 1px; line-height: 1.1; }
+#app.kiosk-mode .kiosk-result-detail { font-size: 0; } /* lo reemplaza la tabla en kiosk.js */
+#app.kiosk-mode .kiosk-badge         { font-size: 22px; padding: 12px 32px; margin-top: 20px; border-radius: 32px; }
 
 #app.kiosk-mode .kiosk-idle {
   margin: 0; border-radius: 0; padding: 32px; font-size: 15px;

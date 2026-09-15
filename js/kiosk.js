@@ -98,12 +98,16 @@ async function kiosk_enter() {
     
     // Tabla bonita si está en kiosco, o texto normal si es finito
     const detalleStr = enModoK
-      ? `<table style="margin:0 auto;text-align:left;border-collapse:collapse;font-size:15px;line-height:1">
-           <tr><td style="color:var(--text3);padding:8px 16px 8px 0;font-size:13px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Plan</td>
-               <td style="font-weight:700;color:var(--text)">${data.plan}</td></tr>
-           <tr><td style="color:var(--text3);padding:8px 16px 8px 0;font-size:13px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Vencimiento</td>
-               <td style="font-weight:700;color:var(--green)">${vence}</td></tr>
-         </table>`
+      ? `<div style="width:100%;margin-top:12px;text-align:center">
+          <div style="padding:16px 0;border-bottom:1px solid rgba(255,255,255,0.08)">
+            <div style="font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-weight:700;margin-bottom:6px">Plan</div>
+            <div style="font-size:32px;font-weight:800;color:var(--text);font-family:var(--font-d)">${data.plan}</div>
+          </div>
+          <div style="padding:16px 0">
+            <div style="font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--text3);font-weight:700;margin-bottom:6px">Vencimiento</div>
+            <div style="font-size:32px;font-weight:800;color:var(--green);font-family:var(--font-d)">${vence}</div>
+          </div>
+        </div>`
       : `Plan: <strong>${data.plan}</strong><br>Vence: <strong>${vence}</strong>`;
 
     mostrarKioskResultado({
