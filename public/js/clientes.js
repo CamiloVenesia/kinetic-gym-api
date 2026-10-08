@@ -4,7 +4,31 @@
 // ═══════════════════════════════════════════
 
 
-// Función auxiliar para evitar desfase de zona horaria
+// ─────────────────────────────────────────
+// Seguridad HTML
+// ─────────────────────────────────────────
+
+function escapeClientesHTML(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+
+function encodeClientesJSArg(value) {
+  return encodeURIComponent(
+    String(value ?? '')
+  ).replaceAll("'", '%27');
+}
+
+
+// ─────────────────────────────────────────
+// Función auxiliar para evitar desfase horario
+// ─────────────────────────────────────────
+
 function formatearFechaLocal(fechaISO) {
   if (!fechaISO) return '—';
 
@@ -46,33 +70,36 @@ async function cargarClientes() {
     datos.forEach(c => {
 
       clientes.push({
-        id: c._id,
+        id: String(c._id || ''),
 
-        dni: c.dni,
+        dni: String(c.dni || ''),
 
-        nombre: c.nombre,
+        nombre: String(c.nombre || ''),
 
-        plan: c.plan,
+        plan: String(c.plan || ''),
 
         vence: formatearFechaLocal(
           c.fechaVencimiento
         ),
 
-        activo: c.activo,
+        activo: Boolean(c.activo),
 
-        tel: c.telefono || '—',
+        tel: String(c.telefono || '—'),
 
         desde: formatearFechaLocal(
           c.fechaInicio
         ),
 
-        ingresos: c.ingresos || []
+        ingresos: Array.isArray(c.ingresos)
+          ? c.ingresos
+          : []
       });
 
     });
 
 
     renderClientsTable();
+
 
     if (
       typeof refreshDashboard === 'function'
@@ -87,6 +114,7 @@ async function cargarClientes() {
       'Error al cargar clientes:',
       error
     );
+
 
     showToast(
       'No se pudo cargar la lista de clientes',
@@ -103,7 +131,8 @@ async function cargarClientes() {
 
 function renderClientsTable(filter = '') {
 
-  const fl = filter.toLowerCase();
+  const fl = String(filter)
+    .toLowerCase();
 
 
   const data = clientes.filter(c =>
@@ -116,14 +145,22 @@ function renderClientsTable(filter = '') {
   const usuarioSesion =
     obtenerUsuarioSesion();
 
+
   const esDemo =
     usuarioSesion &&
     usuarioSesion.rol === 'demo';
 
 
-  document.getElementById(
-    'clients-body'
-  ).innerHTML = data.length
+  const tbody =
+    document.getElementById(
+      'clients-body'
+    );
+
+
+  if (!tbody) return;
+
+
+  tbody.innerHTML = data.length
 
     ? data.map(c => {
 
@@ -203,10 +240,53 @@ function renderClientsTable(filter = '') {
         }
 
 
+        const idSeguro =
+          encodeClientesJSArg(
+            c.id
+          );
+
+
+        const nombreSeguro =
+          escapeClientesHTML(
+            c.nombre
+          );
+
+
+        const nombreArgSeguro =
+          encodeClientesJSArg(
+            c.nombre
+          );
+
+
+        const dniSeguro =
+          escapeClientesHTML(
+            c.dni
+          );
+
+
+        const planSeguro =
+          escapeClientesHTML(
+            c.plan
+          );
+
+
+        const venceSeguro =
+          escapeClientesHTML(
+            c.vence
+          );
+
+
+        const telSeguro =
+          escapeClientesHTML(
+            c.tel
+          );
+
+
         const acciones = esDemo
 
           ? `
             <div style="display:flex;gap:5px">
+
               <button
                 class="btn-icon"
                 style="
@@ -244,6 +324,7 @@ function renderClientsTable(filter = '') {
               >
                 ✕
               </button>
+
             </div>
           `
 
@@ -256,25 +337,35 @@ function renderClientsTable(filter = '') {
                   color:var(--green);
                   border-color:var(--green)
                 "
-                onclick="openRenovar('${c.id}')"
+                onclick="
+                  openRenovar(
+                    decodeURIComponent('${idSeguro}')
+                  )
+                "
               >
                 💵 Renovar
               </button>
 
               <button
                 class="btn-icon edit"
-                onclick="openEditClient('${c.id}')"
+                onclick="
+                  openEditClient(
+                    decodeURIComponent('${idSeguro}')
+                  )
+                "
               >
                 ✏ Editar
               </button>
 
               <button
                 class="btn-icon del"
-                onclick="openDelete(
-                  '${c.id}',
-                  'client',
-                  '${c.nombre}'
-                )"
+                onclick="
+                  openDelete(
+                    decodeURIComponent('${idSeguro}'),
+                    'client',
+                    decodeURIComponent('${nombreArgSeguro}')
+                  )
+                "
               >
                 ✕
               </button>
@@ -305,11 +396,13 @@ function renderClientsTable(filter = '') {
                 "
 
                 onclick="
-                  openProfile('${c.id}')
+                  openProfile(
+                    decodeURIComponent('${idSeguro}')
+                  )
                 "
               >
 
-                ${c.nombre}
+                ${nombreSeguro}
 
               </strong>
 
@@ -324,7 +417,7 @@ function renderClientsTable(filter = '') {
                 letter-spacing:1px
               "
             >
-              ${c.dni}
+              ${dniSeguro}
             </td>
 
 
@@ -333,7 +426,7 @@ function renderClientsTable(filter = '') {
                 color:var(--text2)
               "
             >
-              ${c.plan}
+              ${planSeguro}
             </td>
 
 
@@ -353,7 +446,7 @@ function renderClientsTable(filter = '') {
                 color:${dateColor}
               "
             >
-              ${c.vence}
+              ${venceSeguro}
             </td>
 
 
@@ -362,7 +455,7 @@ function renderClientsTable(filter = '') {
                 color:var(--text3)
               "
             >
-              ${c.tel}
+              ${telSeguro}
             </td>
 
 

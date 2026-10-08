@@ -65,7 +65,8 @@ router.delete(
 // Registrar ingreso
 router.post(
   '/:id/ingreso',
-  permitirRoles('admin', 'dueno', 'recepcion', 'demo'),
+  bloquearDemo,
+  permitirRoles('admin', 'dueno', 'recepcion'),
   registrarIngreso
 );
 
