@@ -34,13 +34,37 @@
 
 ---
 
-## 🔐 Credenciales de Acceso (Demo)
+## Acceso a la demo
 
-| Rol | Usuario | Contraseña |
-| :--- | :--- | :--- |
-| **Administrador** | `admin1234` | `kinetic.dev` |
-| **Dueño** | `kinetic1270` | `gimnasio1270` |
-| **Recepción** | `recepcion01` | `kinetic` |
+La aplicación incluye un **Modo Demo** pensado para recruiters y personas que quieran explorar el sistema sin utilizar credenciales administrativas.
+
+Desde la pantalla de inicio, simplemente seleccioná:
+
+**Entrar como demo**
+
+El entorno demo permite explorar:
+
+- Dashboard y métricas
+- Gestión y búsqueda de clientes
+- Perfiles e historial de ingresos
+- Distribución de planes
+- Vencimientos
+- Modo Kiosco
+- Exportación de datos
+
+Las operaciones que modifican información están restringidas en el entorno público.
+
+### Pruebas del Modo Kiosco
+
+Podés utilizar estos DNI ficticios:
+
+| DNI | Resultado |
+| --- | --- |
+| `11111111` | Acceso permitido |
+| `22222222` | Cuota vencida |
+| `33333333` | Límite semanal alcanzado |
+
+> Todos los datos utilizados en la versión pública son ficticios y fueron creados exclusivamente para demostración.
 
 ---
 

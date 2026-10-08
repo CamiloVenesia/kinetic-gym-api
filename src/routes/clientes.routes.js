@@ -1,9 +1,12 @@
-// ─────────────────────────────────────────────
-//  src/routes/clientes.routes.js
-//  Define las URLs y las conecta con el controller
-// ─────────────────────────────────────────────
 const express = require('express');
-const router  = express.Router();
+
+const router = express.Router();
+
+const {
+  autenticar,
+  permitirRoles,
+  bloquearDemo
+} = require('../middlewares/auth');
 
 const {
   getClientes,
@@ -12,19 +15,68 @@ const {
   editarCliente,
   eliminarCliente,
   registrarIngreso,
-  renovarCuota // <-- Nueva función importada
+  renovarCuota
 } = require('../controllers/clientes.controller');
 
-// ┌─────────────────────────────────────────────────────────────┐
-// │  URL completa = /api/clientes + lo que está acá abajo       │
-// └─────────────────────────────────────────────────────────────┘
 
-router.get('/',              getClientes);         // GET    /api/clientes
-router.get('/dni/:dni',      getClientePorDNI);    // GET    /api/clientes/dni/32847651
-router.post('/',             crearCliente);        // POST   /api/clientes
-router.put('/:id',           editarCliente);       // PUT    /api/clientes/664abc...
-router.delete('/:id',        eliminarCliente);     // DELETE /api/clientes/664abc...
-router.post('/:id/ingreso',  registrarIngreso);    // POST   /api/clientes/664abc.../ingreso
-router.post('/:id/renovar',  renovarCuota);        // POST   /api/clientes/664abc.../renovar <-- Nueva ruta
+// Todas las rutas requieren sesión válida
+router.use(autenticar);
+
+
+// Consultas
+router.get(
+  '/',
+  getClientes
+);
+
+router.get(
+  '/dni/:dni',
+  getClientePorDNI
+);
+
+
+// Crear cliente
+router.post(
+  '/',
+  bloquearDemo,
+  permitirRoles('admin', 'dueno', 'recepcion'),
+  crearCliente
+);
+
+
+// Editar cliente
+router.put(
+  '/:id',
+  bloquearDemo,
+  permitirRoles('admin', 'dueno', 'recepcion'),
+  editarCliente
+);
+
+
+// Eliminar cliente
+router.delete(
+  '/:id',
+  bloquearDemo,
+  permitirRoles('admin', 'dueno'),
+  eliminarCliente
+);
+
+
+// Registrar ingreso
+router.post(
+  '/:id/ingreso',
+  permitirRoles('admin', 'dueno', 'recepcion', 'demo'),
+  registrarIngreso
+);
+
+
+// Renovar cuota
+router.post(
+  '/:id/renovar',
+  bloquearDemo,
+  permitirRoles('admin', 'dueno', 'recepcion'),
+  renovarCuota
+);
+
 
 module.exports = router;

@@ -27,7 +27,57 @@
   <input class="l-input" id="l-pass" type="password" placeholder="••••••••"
     onkeydown="if(event.key==='Enter') doLogin()">
 
-  <button class="l-btn" onclick="doLogin()">Ingresar al sistema</button>
+    <button class="l-btn" onclick="doLogin()">
+      Ingresar al sistema
+    </button>
+
+    <div
+      style="
+        display:flex;
+        align-items:center;
+        gap:10px;
+        margin:16px 0;
+        color:var(--text3);
+        font-size:11px;
+        text-transform:uppercase;
+        letter-spacing:1.5px;
+      "
+    >
+      <div
+        style="
+          flex:1;
+          height:1px;
+          background:var(--border);
+        "
+      ></div>
+
+      <span>Portfolio demo</span>
+
+      <div
+        style="
+          flex:1;
+          height:1px;
+          background:var(--border);
+        "
+      ></div>
+    </div>
+
+    <button
+      class="l-btn"
+      type="button"
+      onclick="doDemoLogin()"
+      style="
+        background:transparent;
+        color:var(--text);
+        border:1px solid var(--border2);
+      "
+    >
+      Entrar como demo
+    </button>
+
+
+
+
 </div>
 </div>
 
