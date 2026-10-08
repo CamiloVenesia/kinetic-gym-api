@@ -1,6 +1,5 @@
 // ═══════════════════════════════════════════
 //  inscripcion.js — Formulario de inscripción
-//  API_URL y apiFetch vienen de data.js
 // ═══════════════════════════════════════════
 
 
@@ -26,35 +25,31 @@ function renderInscRecientes() {
     usuarioSesion.rol === 'demo';
 
 
-  document.getElementById('ins-list').innerHTML =
+  const lista =
+    document.getElementById('ins-list');
+
+  if (!lista) return;
+
+
+  lista.innerHTML =
     inscRecientes
       .slice(0, 8)
       .map(i => {
 
         const nombreSeguro =
-          escapeInscripcionHTML(
-            i.nombre
-          );
+          escapeInscripcionHTML(i.nombre);
 
         const dniSeguro =
-          escapeInscripcionHTML(
-            i.dni
-          );
+          escapeInscripcionHTML(i.dni);
 
         const planSeguro =
-          escapeInscripcionHTML(
-            i.plan
-          );
+          escapeInscripcionHTML(i.plan);
 
         const importeSeguro =
-          escapeInscripcionHTML(
-            i.importe
-          );
+          escapeInscripcionHTML(i.importe);
 
         const fechaSegura =
-          escapeInscripcionHTML(
-            i.fecha
-          );
+          escapeInscripcionHTML(i.fecha);
 
 
         const acciones = esDemo
@@ -115,6 +110,7 @@ function renderInscRecientes() {
         const iniciales =
           nombreSeguro
             .split(' ')
+            .filter(Boolean)
             .map(n => n[0])
             .slice(0, 2)
             .join('');
@@ -288,7 +284,7 @@ async function inscribirCliente() {
   }
 
 
-  const [plan, precio] =
+  const [plan] =
     planRaw.split('|');
 
 
@@ -319,9 +315,7 @@ async function inscribirCliente() {
           },
 
           body:
-            JSON.stringify(
-              payload
-            )
+            JSON.stringify(payload)
         }
       );
 
@@ -330,115 +324,53 @@ async function inscribirCliente() {
       await respuesta.json();
 
 
-    if (respuesta.ok) {
-
-      const imp =
-        '$' +
-        parseInt(
-          precio,
-          10
-        ).toLocaleString(
-          'es-AR'
-        );
-
-
-      inscRecientes.unshift({
-        id:
-          resultado._id,
-
-        nombre:
-          nombreCompleto,
-
-        plan,
-
-        importe:
-          imp,
-
-        fecha:
-          new Date()
-            .toLocaleDateString(
-              'es-AR'
-            ),
-
-        dni
-      });
-
-
-      clientes.unshift({
-        id:
-          resultado._id,
-
-        dni,
-
-        nombre:
-          nombreCompleto,
-
-        plan,
-
-        vence:
-          calcVence(
-            fecha,
-            plan
-          ),
-
-        activo:
-          true,
-
-        tel:
-          tel || '—',
-
-        desde:
-          fecha
-            .split('-')
-            .reverse()
-            .join('/'),
-
-        ingresos:
-          []
-      });
-
-
-      renderInscRecientes();
-
-      renderClientsTable();
-
-      refreshDashboard();
-
-
-      document
-        .getElementById('f-nombre')
-        .value = '';
-
-
-      document
-        .getElementById('f-apellido')
-        .value = '';
-
-
-      document
-        .getElementById('f-dni')
-        .value = '';
-
-
-      document
-        .getElementById('f-tel')
-        .value = '';
-
-
-      showToast(
-        `✓ ${nombreCompleto} inscripto y guardado`
-      );
-
-
-    } else {
-
+    if (!respuesta.ok) {
       showToast(
         resultado.mensaje ||
         'No se pudo inscribir el cliente',
         true
       );
 
+      return;
     }
+
+
+    document
+      .getElementById('f-nombre')
+      .value = '';
+
+
+    document
+      .getElementById('f-apellido')
+      .value = '';
+
+
+    document
+      .getElementById('f-dni')
+      .value = '';
+
+
+    document
+      .getElementById('f-tel')
+      .value = '';
+
+
+    await cargarClientes();
+
+    await cargarInscRecientes();
+
+
+    if (
+      typeof refreshDashboard ===
+      'function'
+    ) {
+      refreshDashboard();
+    }
+
+
+    showToast(
+      `✓ ${nombreCompleto} inscripto y guardado`
+    );
 
 
   } catch (error) {
@@ -453,7 +385,6 @@ async function inscribirCliente() {
       'Error al conectar con la base de datos',
       true
     );
-
   }
 }
 
@@ -508,14 +439,12 @@ function calcVence(
 
 
   } else if (
-    plan ===
-    'Pase Diario'
+    plan === 'Pase Diario'
   ) {
 
     d.setDate(
       d.getDate() + 1
     );
-
   }
 
 
@@ -666,14 +595,68 @@ async function cargarInscRecientes() {
       await respuesta.json();
 
 
-    const todosLosPagos =
-      [];
+    const todosLosPagos = [];
 
 
-    datos.forEach(
-      c => {
+    datos.forEach(c => {
 
-        const precioInsc =
+      const tienePagos =
+        Array.isArray(c.pagos) &&
+        c.pagos.length > 0;
+
+
+      // Si existen pagos registrados en MongoDB,
+      // usamos esos pagos como única fuente.
+      if (tienePagos) {
+
+        c.pagos.forEach(
+          (p, index) => {
+
+            const fechaPago =
+              new Date(p.fecha);
+
+
+            todosLosPagos.push({
+              id:
+                `${c._id}_pago_${index}_${fechaPago.getTime()}`,
+
+              nombre:
+                c.nombre,
+
+              plan:
+                p.plan ||
+                c.plan,
+
+              importe:
+                '$' +
+                (
+                  p.importe ||
+                  0
+                ).toLocaleString(
+                  'es-AR'
+                ),
+
+              fechaObj:
+                fechaPago,
+
+              fecha:
+                fechaPago
+                  .toLocaleDateString(
+                    'es-AR'
+                  ),
+
+              dni:
+                c.dni
+            });
+
+          }
+        );
+
+      } else {
+
+        // Compatibilidad con clientes antiguos que
+        // todavía no tengan historial de pagos.
+        const precio =
           PLAN_PRECIOS[c.plan] ||
           0;
 
@@ -687,7 +670,7 @@ async function cargarInscRecientes() {
 
         todosLosPagos.push({
           id:
-            c._id,
+            `${c._id}_alta`,
 
           nombre:
             c.nombre,
@@ -697,10 +680,9 @@ async function cargarInscRecientes() {
 
           importe:
             '$' +
-            precioInsc
-              .toLocaleString(
-                'es-AR'
-              ),
+            precio.toLocaleString(
+              'es-AR'
+            ),
 
           fechaObj:
             fechaOriginal,
@@ -714,63 +696,9 @@ async function cargarInscRecientes() {
           dni:
             c.dni
         });
-
-
-        if (
-          c.pagos &&
-          c.pagos.length > 0
-        ) {
-
-          c.pagos.forEach(
-            p => {
-
-              const fechaPago =
-                new Date(
-                  p.fecha
-                );
-
-
-              todosLosPagos.push({
-                id:
-                  c._id +
-                  '_' +
-                  fechaPago
-                    .getTime(),
-
-                nombre:
-                  c.nombre,
-
-                plan:
-                  p.plan,
-
-                importe:
-                  '$' +
-                  (
-                    p.importe ||
-                    0
-                  ).toLocaleString(
-                    'es-AR'
-                  ),
-
-                fechaObj:
-                  fechaPago,
-
-                fecha:
-                  fechaPago
-                    .toLocaleDateString(
-                      'es-AR'
-                    ),
-
-                dni:
-                  c.dni
-              });
-
-            }
-          );
-        }
-
       }
-    );
+
+    });
 
 
     todosLosPagos.sort(
@@ -780,8 +708,7 @@ async function cargarInscRecientes() {
     );
 
 
-    inscRecientes.length =
-      0;
+    inscRecientes.length = 0;
 
 
     todosLosPagos.forEach(
@@ -820,6 +747,5 @@ async function cargarInscRecientes() {
       'Error al cargar inscripciones:',
       error
     );
-
   }
 }
